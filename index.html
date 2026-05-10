@@ -125,13 +125,11 @@
 
     let previousMagnitude = 0;
 
-    async function startCounter(buttonElement) {
+async function startCounter(buttonElement) {
 
 
 
-      if ('wakeLock' in navigator) {
-          await requestWakeLock();
-      }
+      
 
       const status = document.getElementById("status");
 
@@ -155,16 +153,18 @@
           return;
         }
       }
-      // 2. Now request Wake Lock
-      await requestWakeLock();
+
+      if ('wakeLock' in navigator) {
+          await requestWakeLock();
+      }
+      
       // 3. UI Changes
        buttonElement.disabled = true;
        buttonElement.innerText = "Tracking...";
        buttonElement.style.opacity = "0.5"; // Visual cue that it's disabled
        buttonElement.style.cursor = "not-allowed";
        status.innerText = "Tracking steps...";
-
-      window.addEventListener("devicemotion", handleMotion);
+       window.addEventListener("devicemotion", handleMotion);
     }
 
     function handleMotion(event) {
