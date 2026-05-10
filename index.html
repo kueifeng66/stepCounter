@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>Step Counter</title>
 
   <style>
@@ -56,11 +57,22 @@
       margin-top: 10px;
       font-size: 1rem;
     }
+    #blackout {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: black;
+      display: none; /* Hidden by default */
+      z-index: 9999;
+      cursor: pointer;
+    }
   </style>
 </head>
 
 <body>
-
+  <div id="blackout"></div>
   <div class="container">
     <h1>Step Counter</h1>
 
@@ -154,24 +166,51 @@
       }
 
       document.getElementById("status").innerText =
-        `Movement: ${delta.toFixed(2)}`;
+        `Movement: ${magnitude.toFixed(2)}`;
     }
 
     function resetCounter() {
       steps = 0;
       document.getElementById("stepCount").innerText = 0;
       // Re-enable the start button
-  const startBtn = document.getElementById("startBtn");
-  startBtn.disabled = false;
-  startBtn.innerText = "Start";
-  startBtn.style.opacity = "1";
-  startBtn.style.cursor = "pointer";
+      const startBtn = document.getElementById("startBtn");
+      startBtn.disabled = false;
+      startBtn.innerText = "Start";
+      startBtn.style.opacity = "1";
+      startBtn.style.cursor = "pointer";
   
-  // Optional: Stop tracking until they hit start again
-  window.removeEventListener("devicemotion", handleMotion);
-  document.getElementById("status").innerText = "Paused";
+      // Optional: Stop tracking until they hit start again
+      window.removeEventListener("devicemotion", handleMotion);
+      document.getElementById("status").innerText = "Paused";
     }
 
+    let lastTap = 0;
+const blackoutOverlay = document.getElementById('blackout');
+
+// Listen for touches on the entire window
+window.addEventListener('touchstart', function (e) {
+    const now = Date.now();
+    const DOUBLE_TAP_THRESHOLD = 300; 
+
+    if (now - lastTap < DOUBLE_TAP_THRESHOLD) {
+        // Double tap detected!
+        toggleBlackout();
+        
+        // Prevent default zoom behavior on double tap
+        if (e.cancelable) e.preventDefault();
+    }
+    lastTap = now;
+}, { passive: false });
+
+function toggleBlackout() {
+    if (blackoutOverlay.style.display === 'block') {
+        blackoutOverlay.style.display = 'none';
+    } else {
+        blackoutOverlay.style.display = 'block';
+    }
+}
+
+  
   </script>
 
 </body>
