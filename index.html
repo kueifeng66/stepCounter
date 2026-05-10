@@ -101,14 +101,17 @@
         wakeLock = await navigator.wakeLock.request('screen');
         console.log('Wake Lock is active');
     
-        // If the user manually minimizes the app, we need to re-request when they come back
-        wakeLock.addEventListener('release', () => {
-         console.log('Wake Lock was released');
-        });
       } catch (err) {
       console.error(`${err.name}, ${err.message}`);
+      }
     }
-  }
+
+    // Re-request wake lock when the app becomes visible again
+  document.addEventListener('visibilitychange', async () => {
+    if (wakeLock !== null && document.visibilityState === 'visible') {
+      await requestWakeLock();
+    }
+  });
 
     let steps = 0;
 
@@ -152,7 +155,9 @@
           return;
         }
       }
-      // 2. Disable the button so it can't be clicked again
+      // 2. Now request Wake Lock
+      await requestWakeLock();
+      // 3. UI Changes
        buttonElement.disabled = true;
        buttonElement.innerText = "Tracking...";
        buttonElement.style.opacity = "0.5"; // Visual cue that it's disabled
