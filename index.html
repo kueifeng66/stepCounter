@@ -66,7 +66,7 @@
 
     <div class="steps" id="stepCount">0</div>
 
-    <button onclick="startCounter()">Start</button>
+    <button id="startBtn" onclick="startCounter(this)">Start</button>
     <button onclick="resetCounter()">Reset</button>
 
     <div class="info">
@@ -83,14 +83,16 @@
     let steps = 0;
 
     let lastStepTime = 0;
+    // THRESHOLD TUNING: 
+    // 12 to 14 is usually the "sweet spot" for walking. 
+    // Gravity is ~9.8. A step usually adds 2-4 units of force.
+    const threshold = 12.5;
 
-    const threshold = 22;
-
-    const minStepInterval = 400;
+    const minStepInterval = 350;
 
     let previousMagnitude = 0;
 
-    async function startCounter() {
+    async function startCounter(buttonElement) {
 
       const status = document.getElementById("status");
 
@@ -114,8 +116,12 @@
           return;
         }
       }
-
-      status.innerText = "Tracking steps...";
+      // 2. Disable the button so it can't be clicked again
+       buttonElement.disabled = true;
+       buttonElement.innerText = "Tracking...";
+       buttonElement.style.opacity = "0.5"; // Visual cue that it's disabled
+       buttonElement.style.cursor = "not-allowed";
+       status.innerText = "Tracking steps...";
 
       window.addEventListener("devicemotion", handleMotion);
     }
@@ -133,17 +139,12 @@
       // magnitude of movement
       const magnitude = Math.sqrt(x * x + y * y + z * z);
 
-      const delta = Math.abs(magnitude - previousMagnitude);
 
-      previousMagnitude = magnitude;
 
       const now = Date.now();
 
       // basic step detection
-      if (
-        delta > threshold &&
-        now - lastStepTime > minStepInterval
-      ) {
+      if (magnitude > threshold && (now - lastStepTime) > minStepInterval){
 
         steps++;
 
@@ -159,6 +160,16 @@
     function resetCounter() {
       steps = 0;
       document.getElementById("stepCount").innerText = 0;
+      // Re-enable the start button
+  const startBtn = document.getElementById("startBtn");
+  startBtn.disabled = false;
+  startBtn.innerText = "Start";
+  startBtn.style.opacity = "1";
+  startBtn.style.cursor = "pointer";
+  
+  // Optional: Stop tracking until they hit start again
+  window.removeEventListener("devicemotion", handleMotion);
+  document.getElementById("status").innerText = "Paused";
     }
 
   </script>
