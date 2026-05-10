@@ -92,6 +92,24 @@
 
   <script>
 
+
+    let wakeLock = null;
+
+    async function requestWakeLock() {
+      try {
+        // This requests the "screen" stay on
+        wakeLock = await navigator.wakeLock.request('screen');
+        console.log('Wake Lock is active');
+    
+        // If the user manually minimizes the app, we need to re-request when they come back
+        wakeLock.addEventListener('release', () => {
+         console.log('Wake Lock was released');
+        });
+      } catch (err) {
+      console.error(`${err.name}, ${err.message}`);
+    }
+  }
+
     let steps = 0;
 
     let lastStepTime = 0;
@@ -105,6 +123,12 @@
     let previousMagnitude = 0;
 
     async function startCounter(buttonElement) {
+
+
+
+      if ('wakeLock' in navigator) {
+          await requestWakeLock();
+      }
 
       const status = document.getElementById("status");
 
