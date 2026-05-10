@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Step Counter</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+    }
+
+    .container {
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
+    }
+
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 10px;
+    }
+
+    .steps {
+      font-size: 5rem;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+
+    button {
+      padding: 15px 25px;
+      border: none;
+      border-radius: 15px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin: 10px;
+      background: white;
+      color: #333;
+      font-weight: bold;
+    }
+
+    .info {
+      margin-top: 20px;
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    .status {
+      margin-top: 10px;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <h1>Step Counter</h1>
+
+    <div class="steps" id="stepCount">0</div>
+
+    <button onclick="startCounter()">Start</button>
+    <button onclick="resetCounter()">Reset</button>
+
+    <div class="info">
+      Walk naturally with your phone.
+    </div>
+
+    <div class="status" id="status">
+      Waiting...
+    </div>
+  </div>
+
+  <script>
+
+    let steps = 0;
+
+    let lastStepTime = 0;
+
+    const threshold = 22;
+
+    const minStepInterval = 400;
+
+    let previousMagnitude = 0;
+
+    async function startCounter() {
+
+      const status = document.getElementById("status");
+
+      // iPhone permission request
+      if (
+        typeof DeviceMotionEvent !== "undefined" &&
+        typeof DeviceMotionEvent.requestPermission === "function"
+      ) {
+
+        try {
+
+          const permission = await DeviceMotionEvent.requestPermission();
+
+          if (permission !== "granted") {
+            status.innerText = "Motion permission denied";
+            return;
+          }
+
+        } catch (err) {
+          status.innerText = "Permission error";
+          return;
+        }
+      }
+
+      status.innerText = "Tracking steps...";
+
+      window.addEventListener("devicemotion", handleMotion);
+    }
+
+    function handleMotion(event) {
+
+      const acc = event.accelerationIncludingGravity;
+
+      if (!acc) return;
+
+      const x = acc.x || 0;
+      const y = acc.y || 0;
+      const z = acc.z || 0;
+
+      // magnitude of movement
+      const magnitude = Math.sqrt(x * x + y * y + z * z);
+
+      const delta = Math.abs(magnitude - previousMagnitude);
+
+      previousMagnitude = magnitude;
+
+      const now = Date.now();
+
+      // basic step detection
+      if (
+        delta > threshold &&
+        now - lastStepTime > minStepInterval
+      ) {
+
+        steps++;
+
+        lastStepTime = now;
+
+        document.getElementById("stepCount").innerText = steps;
+      }
+
+      document.getElementById("status").innerText =
+        `Movement: ${delta.toFixed(2)}`;
+    }
+
+    function resetCounter() {
+      steps = 0;
+      document.getElementById("stepCount").innerText = 0;
+    }
+
+  </script>
+
+</body>
+</html>
